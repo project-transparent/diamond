@@ -1,10 +1,13 @@
 package org.transparent.diamond;
 
-import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.publish.PublishingExtension;
+import org.gradle.api.publish.maven.MavenPublication;
+import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
+import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.internal.jvm.Jvm;
 
@@ -47,11 +50,15 @@ public class DiamondPlugin implements Plugin<Project> {
             project.getDependencies().add("implementation", project.files(toolsJar));
         }
 
-        // On JDK >= 9, we also need to configure module information.
-        // Since annotation processors are loaded by javac at runtime,
-        // they are allowed to see jdk.compiler
+        project.getExtensions().add(DiamondConfigExtension.class, "diamond", new DiamondConfigExtension());
+
         project.afterEvaluate(project2 -> {
-            if (project2.getConvention().getPlugin(JavaPluginConvention.class).getSourceCompatibility().isJava9Compatible()) {
+            JavaPluginConvention convention = project2.getConvention().getPlugin(JavaPluginConvention.class);
+
+            // On JDK >= 9, we also need to configure module information.
+            // Since annotation processors are loaded by javac at runtime,
+            // they are allowed to see jdk.compiler
+            if (convention.getSourceCompatibility().isJava9Compatible()) {
                 project2.getTasks().withType(JavaCompile.class).configureEach(task -> {
                     task.getOptions().getCompilerArgumentProviders().add(() -> {
                         ArrayList<String> list = new ArrayList<>();
@@ -61,6 +68,21 @@ public class DiamondPlugin implements Plugin<Project> {
                         }
                         return list;
                     });
+                });
+            }
+
+            // Setup auto publishing if enabled
+            if (project2.getExtensions().getByType(DiamondConfigExtension.class).autoMavenPublish) {
+                project2.getPluginManager().apply(MavenPublishPlugin.class);
+
+                Jar sourcesJar = project2.getTasks().register("sourcesJar", Jar.class).get();
+                sourcesJar.from(convention.getSourceSets().getByName("main").getAllJava());
+
+                MavenPublication pub = project2.getExtensions().getByType(PublishingExtension.class)
+                        .getPublications().create("mavenJava", MavenPublication.class);
+                pub.from(project2.getComponents().getByName("java"));
+                pub.artifact(sourcesJar, mavenArtifact -> {
+                    mavenArtifact.setClassifier("sources");
                 });
             }
         });
