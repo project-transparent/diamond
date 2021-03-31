@@ -17,7 +17,7 @@ import java.util.ArrayList;
 @SuppressWarnings("unused")
 public class DiamondPlugin implements Plugin<Project> {
 
-    private static final String[] REQUIRED_EXPORTS = new String[] {
+    public static final String[] REQUIRED_EXPORTS = new String[]{
             "com.sun.source.doctree",
             "com.sun.source.tree",
             "com.sun.source.util",
@@ -77,13 +77,12 @@ public class DiamondPlugin implements Plugin<Project> {
 
                 Jar sourcesJar = project2.getTasks().register("sourcesJar", Jar.class).get();
                 sourcesJar.from(convention.getSourceSets().getByName("main").getAllJava());
+                sourcesJar.getArchiveClassifier().set("source");
 
                 MavenPublication pub = project2.getExtensions().getByType(PublishingExtension.class)
                         .getPublications().create("mavenJava", MavenPublication.class);
                 pub.from(project2.getComponents().getByName("java"));
-                pub.artifact(sourcesJar, mavenArtifact -> {
-                    mavenArtifact.setClassifier("sources");
-                });
+                pub.artifact(sourcesJar);
             }
         });
     }
