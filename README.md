@@ -8,4 +8,4 @@ It's designed to allow Project Transparent's other projects to be JDK and Java v
 1. Clone the repo (https://github.com/project-transparent/diamond).
 2. Run `gradlew publishToMavenLocal` in the root directory of the repo.
 3. Add `mavenLocal()` to your plugin repositories.
-4. Add `id 'org.transparent' version '<version>'` to your plugins.
+4. Add `id 'org.transparent.diamond' version '<version>'` to your plugins.
