@@ -1,0 +1,50 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow'
+}
+
+archivesBaseName = 'diamond'
+
+dependencies {
+    implementation project(':core')
+
+    // For some reason the java gradle plugin doesn't apply this properly
+    compileOnly gradleApi()
+}
+
+shadowJar {
+    archiveClassifier = ''
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    from project(':core').sourceSets.main.allJava
+}
+
+assemble.dependsOn shadowJar
+assemble.dependsOn sourceJar
+
+gradlePlugin {
+    plugins {
+        diamond {
+            id = 'org.transparent.diamond'
+            implementationClass = 'org.transparent.diamond.DiamondPlugin'
+        }
+    }
+
+    automatedPublishing = false
+}
+
+publishing {
+    publications {
+        pluginMaven(MavenPublication) {
+            artifactId = archivesBaseName
+
+            shadow.component(it)
+            artifact sourceJar {
+                classifier 'sources'
+            }
+        }
+    }
+}

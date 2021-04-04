@@ -1,0 +1,49 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow'
+    id 'org.transparent.diamond'
+}
+
+archivesBaseName = 'diamond-compiletest'
+
+configurations {
+    include
+}
+
+dependencies {
+    include(compileOnly(project(':core')))
+    implementation('org.ow2.asm:asm-tree:9.1')
+    api(platform('org.junit:junit-bom:5.7.1'))
+    api('org.junit.jupiter:junit-jupiter')
+}
+
+shadowJar {
+    archiveClassifier = ''
+    configurations = [project.configurations.include]
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    from project(':core').sourceSets.main.allJava
+}
+
+shadowJar.mustRunAfter jar
+assemble.dependsOn shadowJar
+assemble.dependsOn sourceJar
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = archivesBaseName
+
+            // shadow plugin cannot correctly add
+            // platform() dependencies, so we must
+            // use components.java
+            from components.java
+            artifact sourceJar {
+                classifier 'sources'
+            }
+        }
+    }
+}

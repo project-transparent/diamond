@@ -1,51 +1,25 @@
 plugins {
-    id 'java-gradle-plugin'
-    id 'maven-publish'
+    id 'org.transparent.diamond' version '1.0.0' apply false
+    id 'com.github.johnrengelman.shadow' version '6.1.0' apply false
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+subprojects {
+    apply plugin: 'java'
 
-group = 'org.transparent'
-archivesBaseName = 'diamond'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-repositories {
-    mavenCentral()
-}
+    group = 'org.transparent'
 
-dependencies {
-    // For some reason the java gradle plugin doesn't apply this properly
-    implementation gradleApi()
-}
-
-gradlePlugin {
-    plugins {
-        diamond {
-            id = 'org.transparent.diamond'
-            implementationClass = 'org.transparent.diamond.DiamondPlugin'
-        }
+    repositories {
+        mavenCentral()
     }
-}
 
-tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = 'UTF-8'
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = 'UTF-8'
 
-    if (JavaVersion.current().isJava9Compatible()) {
-        it.options.release = 8
-    }
-}
-
-task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
-}
-
-publishing {
-    publications {
-        pluginMaven(MavenPublication) {
-            // Gradle plugin plugin provides plugin artifact
-            artifact sourceJar {
-                classifier 'sources'
-            }
+        if (JavaVersion.current().isJava9Compatible()) {
+            it.options.release = 8
         }
     }
 }

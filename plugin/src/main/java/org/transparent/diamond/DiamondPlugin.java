@@ -17,28 +17,6 @@ import java.util.ArrayList;
 @SuppressWarnings("unused")
 public class DiamondPlugin implements Plugin<Project> {
 
-    public static final String[] REQUIRED_EXPORTS = new String[]{
-            "com.sun.source.doctree",
-            "com.sun.source.tree",
-            "com.sun.source.util",
-            "com.sun.tools.javac",
-            "com.sun.tools.javac.api",
-            "com.sun.tools.javac.code",
-            "com.sun.tools.javac.comp",
-            "com.sun.tools.javac.file",
-            "com.sun.tools.javac.jvm",
-            "com.sun.tools.javac.main",
-            "com.sun.tools.javac.model",
-            "com.sun.tools.javac.nio",
-            "com.sun.tools.javac.parser",
-            "com.sun.tools.javac.processing",
-            "com.sun.tools.javac.resources",
-            "com.sun.tools.javac.services",
-            "com.sun.tools.javac.sym",
-            "com.sun.tools.javac.tree",
-            "com.sun.tools.javac.util",
-    };
-
     @Override
     public void apply(Project project) {
         // Require JavaPlugin
@@ -47,7 +25,8 @@ public class DiamondPlugin implements Plugin<Project> {
         // On JDK <= 8, we need to add `tools.jar` to the classpath
         File toolsJar = Jvm.current().getToolsJar();
         if (toolsJar != null && toolsJar.exists()) {
-            project.getDependencies().add("implementation", project.files(toolsJar));
+            project.getDependencies().add("compileOnly", project.files(toolsJar));
+            project.getDependencies().add("testImplementation", project.files(toolsJar));
         }
 
         project.getExtensions().add(DiamondConfigExtension.class, "diamond", new DiamondConfigExtension());
@@ -62,7 +41,7 @@ public class DiamondPlugin implements Plugin<Project> {
                 project2.getTasks().withType(JavaCompile.class).configureEach(task -> {
                     task.getOptions().getCompilerArgumentProviders().add(() -> {
                         ArrayList<String> list = new ArrayList<>();
-                        for (String export : REQUIRED_EXPORTS) {
+                        for (String export : DiamondConstants.REQUIRED_EXPORTS) {
                             list.add("--add-exports");
                             list.add("jdk.compiler/" + export + "=ALL-UNNAMED");
                         }
