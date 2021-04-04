@@ -2,7 +2,8 @@ package org.transparent.diamond.compiletest;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 import javax.annotation.processing.Processor;
 import java.io.File;
@@ -157,18 +158,7 @@ public class CompileTestRunner {
     private static byte[] stripDebugInfo(byte[] bytecode) {
         ClassReader reader = new ClassReader(bytecode);
         ClassWriter writer = new ClassWriter(0);
-        ClassVisitor yeeter = new ClassVisitor(Opcodes.ASM9, writer) {
-            @Override
-            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-                return new MethodVisitor(Opcodes.ASM9) {
-                    @Override
-                    public void visitLineNumber(int line, Label start) {
-                        // no-op
-                    }
-                };
-            }
-        };
-        reader.accept(yeeter, 0);
+        reader.accept(writer, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         return writer.toByteArray();
     }
 
