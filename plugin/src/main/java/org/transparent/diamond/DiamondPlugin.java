@@ -56,7 +56,7 @@ public class DiamondPlugin implements Plugin<Project> {
 
                 Jar sourcesJar = project2.getTasks().register("sourcesJar", Jar.class).get();
                 sourcesJar.from(convention.getSourceSets().getByName("main").getAllJava());
-                sourcesJar.getArchiveClassifier().set("source");
+                sourcesJar.getArchiveClassifier().set("sources");
 
                 MavenPublication pub = project2.getExtensions().getByType(PublishingExtension.class)
                         .getPublications().create("mavenJava", MavenPublication.class);
