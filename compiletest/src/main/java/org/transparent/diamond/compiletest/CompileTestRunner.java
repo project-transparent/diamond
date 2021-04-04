@@ -134,11 +134,22 @@ public class CompileTestRunner {
                         throw new UnsupportedOperationException("Unsupported test target type " + annotation.target().toString());
                     }
 
-                    StringBuilder expectedSourceBuilder = new StringBuilder();
-                    for (String line : annotation.source()) {
-                        expectedSourceBuilder.append(line).append("\n");
+                    String expectedSource;
+                    if (!annotation.expectedFile().isEmpty()) {
+                        Path expectedSourcePath = sourceRootPath.resolve(annotation.expectedFile());
+                        expectedSource = String.join("\n", Files.readAllLines(expectedSourcePath));
+                    } else if (annotation.expected().length > 0) {
+                        String[] rawExpectedSource = annotation.expected();
+                        StringJoiner expectedSourceBuilder = new StringJoiner("\n");
+                        for (int i = 0; i < rawExpectedSource.length; i++) {
+                            expectedSourceBuilder.add(rawExpectedSource[i]);
+                        }
+                        expectedSource = expectedSourceBuilder.toString();
+                    } else {
+                        return DynamicTest.dynamicTest(c.getName(), () -> {
+                            throw new IllegalArgumentException("Either one of `expected` or `expectedFile` must be set!");
+                        });
                     }
-                    String expectedSource = expectedSourceBuilder.toString();
 
                     return DynamicTest.dynamicTest(c.getName(), () -> {
                         byte[] generatedBytecode = compileTestUtils
