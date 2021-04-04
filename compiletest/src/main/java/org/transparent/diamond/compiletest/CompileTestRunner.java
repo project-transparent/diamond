@@ -95,7 +95,9 @@ public class CompileTestRunner {
                         return null;
                     }
                     if (!annotation.annotation().isAnnotation() || annotation.annotation().isArray()) {
-                        throw new UnsupportedOperationException("annotation must be an annotation class");
+                        return DynamicTest.dynamicTest(c.getName(), () -> {
+                            throw new UnsupportedOperationException("annotation must be an annotation class");
+                        });
                     }
 
                     String annotationClassName = annotation.annotation().getName();
@@ -131,7 +133,10 @@ public class CompileTestRunner {
                                 .append("}")
                                 .toString();
                     } else {
-                        throw new UnsupportedOperationException("Unsupported test target type " + annotation.target().toString());
+                        ProcessorTest finalAnnotation = annotation;
+                        return DynamicTest.dynamicTest(c.getName(), () -> {
+                            throw new UnsupportedOperationException("Unsupported test target type " + finalAnnotation.target().toString());
+                        });
                     }
 
                     String expectedSource;
@@ -169,7 +174,7 @@ public class CompileTestRunner {
     private static byte[] stripDebugInfo(byte[] bytecode) {
         ClassReader reader = new ClassReader(bytecode);
         ClassWriter writer = new ClassWriter(0);
-        reader.accept(writer, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        reader.accept(writer, ClassReader.SKIP_DEBUG);
         return writer.toByteArray();
     }
 
