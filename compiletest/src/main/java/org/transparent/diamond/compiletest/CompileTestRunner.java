@@ -165,7 +165,7 @@ public class CompileTestRunner {
                                 .compileWithAnnotationProcessor("Example", expectedSource, null)
                                 .orElseThrow(() -> new CompilerException("Example (no annotation processor)"))
                                 .get("Example");
-                        Assertions.assertArrayEquals(stripDebugInfo(generatedBytecode), stripDebugInfo(expectedBytecode));
+                        Assertions.assertArrayEquals(stripDebugInfo(expectedBytecode), stripDebugInfo(generatedBytecode));
                     });
                 }))
                 .filter(Objects::nonNull);
