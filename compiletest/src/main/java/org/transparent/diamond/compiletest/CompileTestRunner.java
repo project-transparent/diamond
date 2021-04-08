@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.opentest4j.AssertionFailedError;
 
 import javax.annotation.processing.Processor;
 import java.io.File;
@@ -165,7 +166,17 @@ public class CompileTestRunner {
                                 .compileWithAnnotationProcessor("Example", expectedSource, null)
                                 .orElseThrow(() -> new CompilerException("Example (no annotation processor)"))
                                 .get("Example");
-                        Assertions.assertArrayEquals(stripDebugInfo(expectedBytecode), stripDebugInfo(generatedBytecode));
+                        generatedBytecode = stripDebugInfo(generatedBytecode);
+                        expectedBytecode = stripDebugInfo(expectedBytecode);
+                        try {
+                            Assertions.assertArrayEquals(expectedBytecode, generatedBytecode);
+                        } catch (AssertionFailedError e) {
+                            System.err.println("Expected:");
+                            System.err.println(Arrays.toString(expectedBytecode));
+                            System.err.println("Actual:");
+                            System.err.println(Arrays.toString(generatedBytecode));
+                            throw e;
+                        }
                     });
                 }))
                 .filter(Objects::nonNull);
