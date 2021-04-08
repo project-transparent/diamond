@@ -9,4 +9,4 @@ rootProject.name = 'diamond'
 
 include 'core'
 include 'plugin'
-include 'compiletest'
+// include 'compiletest'
