@@ -1,6 +1,15 @@
 pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.namespace == 'org.transparent' && requested.id.name == 'diamond') {
+                useModule('com.github.project-transparent:diamond:ad4511c')
+            }
+        }
+    }
     repositories {
-        mavenLocal()
+        maven {
+            url 'https://jitpack.io/'
+        }
         gradlePluginPortal()
     }
 }
@@ -9,4 +18,4 @@ rootProject.name = 'diamond'
 
 include 'core'
 include 'plugin'
-// include 'compiletest'
+include 'compiletest'
